@@ -105,6 +105,17 @@ describe('LocalFirstAuthSyncServer', () => {
     await eventPromise(bobTeam, 'updated')
 
     expect(bobTeam.hasRole('MANAGERS')).toBe(true)
+
+    // Alice creates a new document
+    const aliceDocHandle = alice.repo.create<TestDoc>()
+    aliceDocHandle.change(doc => (doc.foo = 'alice'))
+
+    // Bob tries to access the doc
+    const bobDocHandle = bob.repo.find<TestDoc>(aliceDocHandle.url)
+
+    await eventPromise(bobDocHandle, 'change')
+
+    expect(bobDocHandle.docSync()).toStrictEqual({ foo: 'alice' })
   })
 })
 
@@ -114,3 +125,7 @@ const lookLikeServerKeys = (maybeKeyset: any) =>
   maybeKeyset.generation === 0 &&
   typeof maybeKeyset.encryption === 'string' &&
   typeof maybeKeyset.signature === 'string'
+
+interface TestDoc {
+  foo: string
+}
