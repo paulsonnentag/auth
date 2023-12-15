@@ -8,5 +8,5 @@
   "include": [
     "src",
     "@types"
-  ]
+, "server.ts"  ]
 }

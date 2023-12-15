@@ -11,7 +11,8 @@
     "build": "tsup",
     "postbuild": "tsc -p tsconfig.build.json --emitDeclarationOnly",
     "test": "vitest",
-    "test:log": "cross-env DEBUG='localfirst*' DEBUG_COLORS=1 vitest --reporter basic"
+    "test:log": "cross-env DEBUG='localfirst*' DEBUG_COLORS=1 vitest --reporter basic",
+    "start": "node sync-server.mjs"
   },
   "dependencies": {
     "@automerge/automerge-repo": "1.1.0-alpha.6",
