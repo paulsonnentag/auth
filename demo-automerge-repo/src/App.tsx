@@ -30,7 +30,7 @@ console.log(await handle.doc())
 
 /**/
 
-/* share data between peers * /
+/* share data between peers */
 
 const bob = ((window as any).bob = await createUser('bob', false))
 
@@ -42,15 +42,10 @@ await bob.authProvider.addInvitation({
   invitationSeed: bobInviteCode,
 })
 
-storeUserData({ name: 'bob', user: bob.user, device: bob.device, team: alice.team })
+//storeUserData({ name: 'bob', user: bob.user, device: bob.device, team: alice.team })
 
-const aliceHandle = alice.repo.create<CounterDoc>()
-
-aliceHandle.change(doc => {
-  doc.counter = 100
-})
 setTimeout(() => {
-  const bobHandle = bob.repo.find<CounterDoc>(aliceHandle.url)
+  const bobHandle = bob.repo.find<CounterDoc>(docUrl)
 
   console.log('load doc')
 
