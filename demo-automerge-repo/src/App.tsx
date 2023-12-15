@@ -4,8 +4,16 @@ import { Repo } from '@automerge/automerge-repo'
 import { BrowserWebSocketClientAdapter } from '@automerge/automerge-repo-network-websocket'
 import { DummyStorageAdapter } from './DummyStorageAdapter'
 
-const alice = ((window as any).alice = await createUser('alice'))
-const bob = ((window as any).bob = await createUser('bob'))
+const alice = ((window as any).alice = await createUser('alice', true))
+const bob = ((window as any).bob = await createUser('bob', false))
+
+// invite bob
+const { seed: bobInviteCode } = alice.team.inviteMember()
+
+await bob.authProvider.addInvitation({
+  shareId: alice.team.id,
+  invitationSeed: bobInviteCode,
+})
 
 interface CounterDoc {
   counter: number
@@ -17,15 +25,18 @@ aliceHandle.change(doc => {
   doc.counter = 100
 })
 
-const bobHandle = bob.repo.find<CounterDoc>(aliceHandle.url)
+setTimeout(() => {
+  const bobHandle = bob.repo.find<CounterDoc>(aliceHandle.url)
 
-bobHandle.doc().then(doc => {
-  console.log(doc)
-})
+  console.log('load doc')
 
+  bobHandle.doc().then(doc => {
+    console.log('doc', doc)
+  })
+}, 2000)
 //localStorage.setItem('debug', 'localfirst:auth*')
 
-async function createUser(name: string) {
+async function createUser(name: string, withTeam: boolean) {
   const storage = new DummyStorageAdapter()
 
   const user = Auth.createUser(name)
@@ -40,26 +51,29 @@ async function createUser(name: string) {
     storage,
   })
 
-  // create a team
-  const team = Auth.createTeam(`team ${name}`, context)
-  await authProvider.addTeam(team)
+  let team
+  if (withTeam) {
+    // create a team
+    team = Auth.createTeam(`team ${name}`, context)
+    await authProvider.addTeam(team)
 
-  // get the server's public keys
-  const response = await fetch(`http://localhost:3030/keys`)
-  const keys = await response.json()
+    // get the server's public keys
+    const response = await fetch(`http://localhost:3030/keys`)
+    const keys = await response.json()
 
-  // add the server's public keys to the team
-  team.addServer({ host: 'localhost', keys })
+    // add the server's public keys to the team
+    team.addServer({ host: 'localhost', keys })
 
-  // register the team with the server
-  await fetch(`http://localhost:3030/teams`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      serializedGraph: team.save(),
-      teamKeyring: team.teamKeyring(),
-    }),
-  })
+    // register the team with the server
+    await fetch(`http://localhost:3030/teams`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        serializedGraph: team.save(),
+        teamKeyring: team.teamKeyring(),
+      }),
+    })
+  }
 
   repo.networkSubsystem.on('peer', payload => {
     console.log(`${name} is connected`, payload)
