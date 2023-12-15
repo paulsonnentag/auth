@@ -12,18 +12,16 @@ interface CounterDoc {
 
 /* reload data for alice */
 
-const docUrl = 'automerge:zrjMfTdPeedDYqxqEwg5kq31swD' as AutomergeUrl
+const docUrl = (localStorage.getItem('docUrl') as AutomergeUrl) ?? alice.repo.create().url
 
-alice.repo.on('document', doc => {
-  console.log('new doc', doc)
-})
+localStorage.setItem('docUrl', docUrl)
 
 const handle = alice.repo.find<CounterDoc>(docUrl)
 
 await handle.whenReady()
 
 handle.change(doc => {
-  doc.counter = doc.counter + 200
+  doc.counter = (doc.counter ?? 0) + 200
 })
 
 console.log(await handle.doc())
@@ -138,7 +136,6 @@ function loadUserData(name: string) {
 
   if (raw) {
     const data = JSON.parse(raw)
-    console.log('load', data)
     return data
   }
 }
