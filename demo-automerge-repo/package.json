@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "@automerge/automerge-repo": "1.1.0-alpha.6",
+    "@automerge/automerge-repo-network-websocket": "1.1.0-alpha.6"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",
